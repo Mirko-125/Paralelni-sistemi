@@ -10,7 +10,7 @@
 
 int main(int argc, char *argv[]) // p = 8 | 4 | 2 | 1
 {
-    int i, j, id, p;
+    int i, j, k, id, p;
     double A[K][M], B[M][L], C[K][L];
     MPI_Datatype column_type, row_type, column_resized, row_resized;
     MPI_Init(&argc, &argv);
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) // p = 8 | 4 | 2 | 1
 
     for (i = 0; i < K; i++)
         for (j = 0; j < L; j++)
-            for (int k = 0; k < M / p; k++)
+            for (k = 0; k < M / p; k++)
                 mid_C[i * L + j] += block_A[i * (M / p) + k] * block_B[k * L + j];
 
     MPI_Reduce(mid_C, C, K * L, MPI_DOUBLE, MPI_SUM, ROOT, MPI_COMM_WORLD);

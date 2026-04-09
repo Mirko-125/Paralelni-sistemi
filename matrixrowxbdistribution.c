@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     MPI_Type_create_resized(row_size_t, 0, sizeof(double) * M, &row_resize_t);
     MPI_Type_commit(&row_resize_t);
 
-    MPI_Scatter(&A[0][0], 1, row_resize_t, rowA, (K / p) * M, MPI_DOUBLE, MASTER, MPI_COMM_WORLD);
+    MPI_Scatter(A, 1, row_resize_t, rowA, (K / p) * M, MPI_DOUBLE, MASTER, MPI_COMM_WORLD);
 
     MPI_Bcast(&B[0][0], M * L, MPI_DOUBLE, MASTER, MPI_COMM_WORLD);
 
@@ -103,31 +103,14 @@ int main(int argc, char *argv[])
             printf("%6.1f ", midC[i * L + j]);
         printf("\n");
     }
-    /* WIP
-    int block_lens[K / p];
-    int displacements[K / p];
 
-    for (i = 0; i < K / p; i++)
-    {
-        block_lens[i] = L;
-        displacements[i] = (myrank + i * p) * L;
-    }
+    MPI_Datatype gather_size_t, gather_resize_t;
 
-    MPI_Datatype gather_t, gather_resized_t;
+    MPI_Type_vector(K / p, L, L * p, MPI_DOUBLE, &gather_size_t);
+    MPI_Type_create_resized(gather_size_t, 0, sizeof(double) * L, &gather_resize_t);
+    MPI_Type_commit(&gather_resize_t);
 
-
-    MPI_Type_indexed(K / p, block_lens, displacements, MPI_DOUBLE, &gather_t);
-    MPI_Type_create_resized(gather_t, 0, K * L * sizeof(double), &gather_resized_t);
-    MPI_Type_commit(&gather_resized_t);
-
-    MPI_Gather(midC, (K / p) * L, MPI_DOUBLE, &C, 1, gather_resized_t, MASTER, MPI_COMM_WORLD);
-
-    MPI_Type_free(&gather_t);
-    MPI_Type_free(&gather_resized_t);
-
-    */
-
-    MPI_Gather(midC, K / p * L, MPI_DOUBLE, C, K / p * L, MPI_DOUBLE, MASTER, MPI_COMM_WORLD);
+    MPI_Gather(midC, K / p * L, MPI_DOUBLE, C, 1, gather_resize_t, MASTER, MPI_COMM_WORLD);
 
     if (MASTER == myrank)
     {
@@ -146,6 +129,10 @@ int main(int argc, char *argv[])
 
     MPI_Type_free(&row_size_t);
     MPI_Type_free(&row_resize_t);
+
+    MPI_Type_free(&gather_size_t);
+    MPI_Type_free(&gather_resize_t);
+
     MPI_Finalize();
     return 0;
 }

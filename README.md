@@ -33,5 +33,23 @@ nvcc <src>.cu -o <dst>.exe
 run:
 
 ```bash
-<dst>.exe
+./<dst>.exe
+```
+
+## OpenMP
+
+reqirements:
+
+[gcc](https://gcc.gnu.org/)
+
+build:
+
+```bash
+gcc -fopenmp <src>.c -o <dst>.exe
+```
+
+run:
+
+```bash
+./<dst>.exe
 ```
